@@ -46,16 +46,16 @@ jobs:
         with:
           terraform_version: 1.12.2
       - run: terraform init
-      - run: timeout 180 terraform plan -out=tfplan
-        env:
-          TF_LOG: DEBUG
-          TF_LOG_PATH: terraform-debug.log
-      - name: Upload Debug Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-debug-log
-          path: terraform/terraform-debug.log
+      - run: timeout 180 terraform plan -input=false -out=tfplan 
+      #   env:
+      #     TF_LOG: DEBUG
+      #     TF_LOG_PATH: terraform-debug.log
+      # - name: Upload Debug Log
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: terraform-debug-log
+      #     path: terraform/terraform-debug.log
 
       - name: Upload Plan
         uses: actions/upload-artifact@v4

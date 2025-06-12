@@ -4,8 +4,8 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "management_ip" {
-  description = "IP address for management access"
-  type        = string
-  sensitive   = true
-}
+# variable "management_ip" {
+#   description = "IP address for management access"
+#   type        = string
+#   sensitive   = true
+# }
