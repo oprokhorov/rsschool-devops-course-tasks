@@ -14,7 +14,7 @@ resource "aws_iam_role" "github_actions_role" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:oprokhorov/rsschool-devops-course-tasks:ref:refs/heads/*"
+            "token.actions.githubusercontent.com:sub" = "repo:oprokhorov/rsschool-devops-course-tasks:*"
           }
         }
       }
