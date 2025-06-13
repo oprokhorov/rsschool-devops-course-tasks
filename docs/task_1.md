@@ -9,12 +9,12 @@ aws cli is simple msi install on windows. For terraform download exe file and ad
 ## 2. Create IAM User and Configure MFA
 Go to IAM > Users > Create user > **RSSchoolTerraform** > Next > Create user. We will use it for terraform running on our laptop
 
-Click **RSSchoolTerraform** user > Security credentials > Multi-factor authentication (MFA) > Assing MFA devide > specify MFA device name (how it would be called on your authenticator app) > Authenticator app > Show QR code > Scan it with Google > enter two consecutive codes to fields below > click add MFA
+Click **RSSchoolTerraform** user > Security credentials > Multi-factor authentication (MFA) > Assing MFA devide > specify MFA device name (how it would be called on your authenticator app) > Authenticator app > Show QR code > Scan it with Google Authenticator > Enter two consecutive codes from Google Authenticator to the fields below > Click add MFA
 
-Click **RSSchoolTerraform** user > Access keys > create access key
+Click **RSSchoolTerraform** user > Access keys > create access key and secret key
 
 ## 3. Configure AWS CLI
-Create access key & secret and and configure aws cli to use these credentials on your laptop:
+Use access key and secret key to configure aws cli to use these credentials on your laptop:
 ```bash
 aws configure
 ```
@@ -80,4 +80,4 @@ Which should create the github role, trust policy for it as well as s3 bucket
 Go to IAM > Roles > GithubActionsRole and verify attached permissions and trust policy created from code in previous step.
 
 ## 8. Create a Github Actions workflow for deployment via Terraform
-This task implements the worflow. 
+This task implements the workflow https://github.com/oprokhorov/rsschool-devops-course-tasks/actions/workflows/terraform.yml
