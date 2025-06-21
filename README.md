@@ -22,3 +22,4 @@
 Task solution doccumentation:
 
 - [Task 1: AWS Account Configuration](./docs/task_1.md)
+- [Task 2: Basic Infrastructure Configuration](./docs/task_1.md)
