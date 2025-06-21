@@ -6,6 +6,11 @@ temp/
 *.tfstate
 *.tfstate.*
 
+# plan files
+tfplan
+*.tfplan
+*.tfplan.*
+
 # Crash log files
 crash.log
 crash.*.log
