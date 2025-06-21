@@ -8,6 +8,7 @@ First deploy Github Actions role so CI workflow can deploy aws infrrastructure (
 
 ```powershell
 terraform plan --target=aws_iam_role.github_actions_role `
+  --target=aws_iam_role_policy_attachment.ec2_full_access `
   --target=aws_iam_role_policy_attachment.route53_full_access `
   --target=aws_iam_role_policy_attachment.s3_full_access `
   --target=aws_iam_role_policy_attachment.iam_full_access `
