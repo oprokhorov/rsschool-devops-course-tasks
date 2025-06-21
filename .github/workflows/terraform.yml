@@ -11,6 +11,8 @@ on:
 permissions:
   id-token: write
   contents: read
+env:
+  TF_VAR_management_ip: ${{ secrets.MANAGEMENT_IP }}
 
 jobs:
   terraform-check:
