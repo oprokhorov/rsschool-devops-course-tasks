@@ -4,6 +4,22 @@ This task creates infrastructure described in [task_2](https://github.com/rollin
 
 Disclamer - commands in this doc are written for windows host and Powershell
 
+First deploy Github Actions role so CI workflow can deploy aws infrrastructure (i have destroyed the infra from task 1 to have a new plan, and now i have to bootstrap github role again in this hacky way. But hey, its a lerning process 😅):
+
+```powershell
+terraform plan --target=aws_iam_role.github_actions_role `
+  --target=aws_iam_role_policy_attachment.route53_full_access `
+  --target=aws_iam_role_policy_attachment.s3_full_access `
+  --target=aws_iam_role_policy_attachment.iam_full_access `
+  --target=aws_iam_role_policy_attachment.vpc_full_access `
+  --target=aws_iam_role_policy_attachment.sqs_full_access `
+  --target=aws_iam_role_policy_attachment.eventbridge_full_access `
+  --out=tfplan
+
+terraform apply tfplan
+
+```
+
 We will create the underlying network resources and 4 EC2 instances. But first, we need to generate a keypair that will be used for ssh connection via bastion host connection. Open poweshell window and generate a key (you can skipp the passphrase if you want)
 
 ```powershell

@@ -7,23 +7,24 @@ module "bastion" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_ports = {
-    ssh = {
+  allowed_inbound_cidr_ports = [
+    {
       port        = 22
       cidr        = local.management_ip_cidr
       description = "SSH from management IP"
-    }
-    http = {
+    },
+    {
       port        = 80
       cidr        = local.management_ip_cidr
       description = "HTTP from management IP"
-    }
-    https = {
+    },
+    {
       port        = 443
       cidr        = local.management_ip_cidr
       description = "HTTPS from management IP"
     }
-  }
+  ]
+  allowed_inbound_sg_ports = []
 
   user_data = file("${path.module}/modules/ec2_instance/user_data/bastion.sh")
 
@@ -41,18 +42,19 @@ module "control_node" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_ports = {
-    ssh = {
+  allowed_inbound_cidr_ports = []
+  allowed_inbound_sg_ports = [
+    {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
       description              = "SSH from Bastion SG"
-    }
-    kube_api = {
+    },
+    {
       port                     = 6443
       source_security_group_id = module.bastion.security_group_id
       description              = "Kubernetes API from Bastion SG"
     }
-  }
+  ]
 
   user_data = file("${path.module}/modules/ec2_instance/user_data/control_node.sh")
 
@@ -70,13 +72,14 @@ module "worker_node" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_ports = {
-    ssh = {
+  allowed_inbound_cidr_ports = []
+  allowed_inbound_sg_ports = [
+    {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
       description              = "SSH from Bastion SG"
     }
-  }
+  ]
 
   user_data = file("${path.module}/modules/ec2_instance/user_data/worker_node.sh")
 
@@ -94,13 +97,14 @@ module "public_vm" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_ports = {
-    ssh = {
+  allowed_inbound_cidr_ports = []
+  allowed_inbound_sg_ports = [
+    {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
       description              = "SSH from Bastion SG"
     }
-  }
+  ]
 
   user_data = null
 

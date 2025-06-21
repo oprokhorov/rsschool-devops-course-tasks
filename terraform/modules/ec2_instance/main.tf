@@ -44,7 +44,7 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr" {
-  for_each = { for k, v in var.allowed_inbound_ports : k => v if try(v.cidr, null) != null }
+  for_each = { for idx, rule in var.allowed_inbound_cidr_ports : idx => rule }
 
   security_group_id = aws_security_group.this.id
   description       = each.value.description
@@ -55,7 +55,7 @@ resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg" {
-  for_each = { for k, v in var.allowed_inbound_ports : k => v if try(v.source_security_group_id, null) != null }
+  for_each = { for idx, rule in var.allowed_inbound_sg_ports : idx => rule }
 
   security_group_id            = aws_security_group.this.id
   description                  = each.value.description

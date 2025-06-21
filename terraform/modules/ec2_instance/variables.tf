@@ -24,14 +24,24 @@ variable "key_name" {
   type        = string
 }
 
-variable "allowed_inbound_ports" {
-  description = "Map of allowed inbound ports and their source (CIDR or security group) and description"
-  type = map(object({
+variable "allowed_inbound_cidr_ports" {
+  description = "List of objects for CIDR-based inbound rules"
+  type = list(object({
+    port        = number
+    cidr        = string
+    description = string
+  }))
+  default = []
+}
+
+variable "allowed_inbound_sg_ports" {
+  description = "List of objects for SG-based inbound rules"
+  type = list(object({
     port                     = number
-    cidr                     = optional(string)
-    source_security_group_id = optional(string)
+    source_security_group_id = string
     description              = string
   }))
+  default = []
 }
 
 variable "user_data" {
