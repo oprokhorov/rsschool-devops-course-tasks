@@ -14,6 +14,7 @@ terraform plan --target=aws_iam_role.github_actions_role `
   --target=aws_iam_role_policy_attachment.vpc_full_access `
   --target=aws_iam_role_policy_attachment.sqs_full_access `
   --target=aws_iam_role_policy_attachment.eventbridge_full_access `
+  --target=aws_key_pair.deployer `
   --out=tfplan
 
 terraform apply tfplan

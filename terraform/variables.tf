@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "deployer_public_key" {
+  type      = string
+  sensitive = true
+}
+
 variable "management_ip" {
   description = "IP address with ssh access to bastion host"
   type        = string

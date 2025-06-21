@@ -13,6 +13,7 @@ permissions:
   contents: read
 env:
   TF_VAR_management_ip: ${{ secrets.MANAGEMENT_IP }}
+  TF_VAR_deployer_public_key: ${{ secrets.DEPLOYER_PUBLIC_KEY }}
 
 jobs:
   terraform-check:

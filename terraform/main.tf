@@ -13,5 +13,5 @@ provider "aws" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-key"
-  public_key = file(pathexpand("~/.ssh/deployer-key.pub"))
+  public_key = var.deployer_public_key
 }
