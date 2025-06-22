@@ -3,6 +3,11 @@ output "bastion_instance_public_ip" {
   value       = module.bastion.instance_public_ip
 }
 
+output "bastion_instance_private_ip" {
+  description = "Private IP address of the Bastion EC2 instance"
+  value       = module.bastion.instance_private_ip
+}
+
 output "control_node_private_ip" {
   description = "Private IP address of the ControlNode EC2 instance"
   value       = module.control_node.instance_private_ip
