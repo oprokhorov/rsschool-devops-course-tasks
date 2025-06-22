@@ -27,6 +27,7 @@ module "bastion" {
       port        = -1
       cidr        = aws_vpc.main.cidr_block
       description = "ICMP (ping) from within VPC"
+      protocol    = "icmp"
     }
   ]
   allowed_inbound_sg_ports = []
@@ -52,6 +53,7 @@ module "control_node" {
       port        = -1
       cidr        = aws_vpc.main.cidr_block
       description = "ICMP (ping) from within VPC"
+      protocol    = "icmp"
     }
   ]
   allowed_inbound_sg_ports = [
@@ -88,6 +90,7 @@ module "worker_node" {
       port        = -1
       cidr        = aws_vpc.main.cidr_block
       description = "ICMP (ping) from within VPC"
+      protocol    = "icmp"
     }
   ]
   allowed_inbound_sg_ports = [
@@ -124,6 +127,7 @@ module "public_vm" {
       port        = -1
       cidr        = aws_vpc.main.cidr_block
       description = "ICMP (ping) from within VPC"
+      protocol    = "icmp"
     }
   ]
   allowed_inbound_sg_ports = [
