@@ -22,6 +22,11 @@ module "bastion" {
       port        = 443
       cidr        = local.management_ip_cidr
       description = "HTTPS from management IP"
+    },
+    {
+      port        = -1
+      cidr        = aws_vpc.main.cidr_block
+      description = "ICMP (ping) from within VPC"
     }
   ]
   allowed_inbound_sg_ports = []
@@ -42,17 +47,23 @@ module "control_node" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_cidr_ports = []
+  allowed_inbound_cidr_ports = [
+    {
+      port        = -1
+      cidr        = aws_vpc.main.cidr_block
+      description = "ICMP (ping) from within VPC"
+    }
+  ]
   allowed_inbound_sg_ports = [
     {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
-      description              = "SSH from Bastion SG"
+      description              = "SSH from Bastion"
     },
     {
       port                     = 6443
       source_security_group_id = module.bastion.security_group_id
-      description              = "Kubernetes API from Bastion SG"
+      description              = "K3s API from Bastion"
     }
   ]
 
@@ -72,12 +83,23 @@ module "worker_node" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_cidr_ports = []
+  allowed_inbound_cidr_ports = [
+    {
+      port        = -1
+      cidr        = aws_vpc.main.cidr_block
+      description = "ICMP (ping) from within VPC"
+    }
+  ]
   allowed_inbound_sg_ports = [
     {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
-      description              = "SSH from Bastion SG"
+      description              = "SSH from Bastion"
+    },
+    {
+      port                     = 6443
+      source_security_group_id = module.bastion.security_group_id
+      description              = "K3s API from Bastion"
     }
   ]
 
@@ -97,12 +119,18 @@ module "public_vm" {
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
 
-  allowed_inbound_cidr_ports = []
+  allowed_inbound_cidr_ports = [
+    {
+      port        = -1
+      cidr        = aws_vpc.main.cidr_block
+      description = "ICMP (ping) from within VPC"
+    }
+  ]
   allowed_inbound_sg_ports = [
     {
       port                     = 22
       source_security_group_id = module.bastion.security_group_id
-      description              = "SSH from Bastion SG"
+      description              = "SSH from Bastion"
     }
   ]
 
