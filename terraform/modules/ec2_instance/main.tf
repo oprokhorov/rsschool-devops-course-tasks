@@ -43,25 +43,63 @@ resource "aws_security_group" "this" {
   )
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr" {
-  for_each = { for idx, rule in var.allowed_inbound_cidr_ports : idx => rule }
+# TCP/UDP rules from CIDR blocks
+resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_tcp" {
+  for_each = { 
+    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule 
+    if rule.port != -1
+  }
 
   security_group_id = aws_security_group.this.id
   description       = each.value.description
   from_port         = each.value.port
   to_port           = each.value.port
-  ip_protocol       = "tcp"
+  ip_protocol       = lookup(each.value, "protocol", "tcp")
   cidr_ipv4         = each.value.cidr
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg" {
-  for_each = { for idx, rule in var.allowed_inbound_sg_ports : idx => rule }
+# ICMP rules from CIDR blocks
+resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_icmp" {
+  for_each = { 
+    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule 
+    if rule.port == -1
+  }
+
+  security_group_id = aws_security_group.this.id
+  description       = each.value.description
+  from_port         = -1
+  to_port           = -1
+  ip_protocol       = "icmp"
+  cidr_ipv4         = each.value.cidr
+}
+
+# TCP/UDP rules from Security Groups
+resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg_tcp" {
+  for_each = { 
+    for idx, rule in var.allowed_inbound_sg_ports : idx => rule 
+    if lookup(rule, "protocol", "tcp") != "icmp"
+  }
 
   security_group_id            = aws_security_group.this.id
   description                  = each.value.description
   from_port                    = each.value.port
   to_port                      = each.value.port
-  ip_protocol                  = "tcp"
+  ip_protocol                  = lookup(each.value, "protocol", "tcp")
+  referenced_security_group_id = each.value.source_security_group_id
+}
+
+# ICMP rules from Security Groups
+resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg_icmp" {
+  for_each = { 
+    for idx, rule in var.allowed_inbound_sg_ports : idx => rule 
+    if lookup(rule, "protocol", "tcp") == "icmp"
+  }
+
+  security_group_id            = aws_security_group.this.id
+  description                  = each.value.description
+  from_port                    = -1
+  to_port                      = -1
+  ip_protocol                  = "icmp"
   referenced_security_group_id = each.value.source_security_group_id
 }
 
