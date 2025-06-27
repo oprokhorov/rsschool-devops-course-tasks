@@ -43,7 +43,7 @@ module "control_node" {
   source = "./modules/ec2_instance"
 
   name          = "ControlNode"
-  instance_type = "t2.micro"
+  instance_type = "t3.small"
   subnet_id     = aws_subnet.private_1.id
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
@@ -85,7 +85,7 @@ module "worker_node" {
   source = "./modules/ec2_instance"
 
   name          = "WorkerNode"
-  instance_type = "t2.micro"
+  instance_type = "t3.small"
   subnet_id     = aws_subnet.private_2.id
   vpc_id        = aws_vpc.main.id
   key_name      = aws_key_pair.deployer.key_name
