@@ -1,6 +1,6 @@
 #!/bin/bash
 
-hostnamectl set-hostname bastion
+hostnamectl set-hostname control-node
 
 apt update
 apt upgrade -y
