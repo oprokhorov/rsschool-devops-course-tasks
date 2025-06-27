@@ -1,4 +1,6 @@
 #!/bin/bash
-sudo dnf update -y
-sudo dnf install nmap-ncat -y # to probe ports
-sudo hostnamectl set-hostname control-node
+
+hostnamectl set-hostname bastion
+
+apt update
+apt upgrade -y

@@ -1,10 +1,10 @@
-data "aws_ami" "amazon_linux_2023" {
+data "aws_ami" "ubuntu_lts" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical owner ID for Ubuntu
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -14,7 +14,7 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_instance" "this" {
-  ami                    = data.aws_ami.amazon_linux_2023.id
+  ami                    = data.aws_ami.ubuntu_lts.id
   instance_type          = var.instance_type
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [aws_security_group.this.id]
@@ -45,8 +45,8 @@ resource "aws_security_group" "this" {
 
 # TCP/UDP rules from CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_tcp" {
-  for_each = { 
-    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule 
+  for_each = {
+    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule
     if rule.port != -1
   }
 
@@ -60,8 +60,8 @@ resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_tcp" {
 
 # ICMP rules from CIDR blocks
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_icmp" {
-  for_each = { 
-    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule 
+  for_each = {
+    for idx, rule in var.allowed_inbound_cidr_ports : idx => rule
     if rule.port == -1
   }
 
@@ -75,8 +75,8 @@ resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_cidr_icmp" {
 
 # TCP/UDP rules from Security Groups
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg_tcp" {
-  for_each = { 
-    for idx, rule in var.allowed_inbound_sg_ports : idx => rule 
+  for_each = {
+    for idx, rule in var.allowed_inbound_sg_ports : idx => rule
     if lookup(rule, "protocol", "tcp") != "icmp"
   }
 
@@ -90,8 +90,8 @@ resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg_tcp" {
 
 # ICMP rules from Security Groups
 resource "aws_vpc_security_group_ingress_rule" "allowed_inbound_sg_icmp" {
-  for_each = { 
-    for idx, rule in var.allowed_inbound_sg_ports : idx => rule 
+  for_each = {
+    for idx, rule in var.allowed_inbound_sg_ports : idx => rule
     if lookup(rule, "protocol", "tcp") == "icmp"
   }
 
