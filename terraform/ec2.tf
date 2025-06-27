@@ -113,38 +113,6 @@ module "worker_node" {
   }
 }
 
-module "public_vm" {
-  source = "./modules/ec2_instance"
-
-  name          = "PublicVM"
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public_2.id
-  vpc_id        = aws_vpc.main.id
-  key_name      = aws_key_pair.deployer.key_name
-
-  allowed_inbound_cidr_ports = [
-    {
-      port        = -1
-      cidr        = aws_vpc.main.cidr_block
-      description = "ICMP (ping) from within VPC"
-      protocol    = "icmp"
-    }
-  ]
-  allowed_inbound_sg_ports = [
-    {
-      port                     = 22
-      source_security_group_id = module.bastion.security_group_id
-      description              = "SSH from Bastion"
-    }
-  ]
-
-  user_data = null
-
-  tags = {
-    Environment = "prod"
-  }
-}
-
 locals {
   management_ip_cidr = "${nonsensitive(var.management_ip)}/32"
 }
