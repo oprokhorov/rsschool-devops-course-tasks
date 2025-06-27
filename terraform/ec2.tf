@@ -66,6 +66,11 @@ module "control_node" {
       port                     = 6443
       source_security_group_id = module.bastion.security_group_id
       description              = "K3s API from Bastion"
+    },
+    {
+      port                     = 6443
+      source_security_group_id = module.worker_node.security_group_id
+      description              = "K3s API from Worker Node"
     }
   ]
 
@@ -103,6 +108,11 @@ module "worker_node" {
       port                     = 6443
       source_security_group_id = module.bastion.security_group_id
       description              = "K3s API from Bastion"
+    },
+    {
+      port                     = 6443
+      source_security_group_id = module.control_node.security_group_id
+      description              = "K3s API from Control Node"
     }
   ]
 
