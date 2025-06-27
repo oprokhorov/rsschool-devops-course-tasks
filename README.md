@@ -22,4 +22,5 @@
 Task solution doccumentation:
 
 - [Task 1: AWS Account Configuration](./docs/task_1.md)
-- [Task 2: Basic Infrastructure Configuration](./docs/task_1.md)
+- [Task 2: Basic Infrastructure Configuration](./docs/task_2.md)
+- [Task 3: K8s Cluster Configuration and Creationn](./docs/task_3.md)
