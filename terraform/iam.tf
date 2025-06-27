@@ -56,3 +56,29 @@ resource "aws_iam_role_policy_attachment" "eventbridge_full_access" {
   role       = aws_iam_role.github_actions_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess"
 }
+
+resource "aws_iam_role" "ssm_access" {
+  name = "SSMAccess"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_managed" {
+  role       = aws_iam_role.ssm_access.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ssm_access" {
+  name = "SSMAccess"
+  role = aws_iam_role.ssm_access.name
+}
