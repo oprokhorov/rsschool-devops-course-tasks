@@ -12,9 +12,9 @@
   - [4. Install k3s on WorkerNode](#4-install-k3s-on-workernode)
   - [5. Configure kubectl on Bastion Host](#5-configure-kubectl-on-bastion-host)
   - [6. Deploy sample workload](#6-deploy-sample-workload)
-  - [Troubleshooting](#troubleshooting)
+  - [7. Configure kubectl on your local machine](#7-configure-kubectl-on-your-local-machine)
   - [Conclusion](#conclusion)
-
+  - [Docs](#docs)
 
 
 ## Configuring a k3s Cluster on AWS Infrastructure

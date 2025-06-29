@@ -16,8 +16,9 @@
   - [4. Install k3s on WorkerNode](#4-install-k3s-on-workernode)
   - [5. Configure kubectl on Bastion Host](#5-configure-kubectl-on-bastion-host)
   - [6. Deploy sample workload](#6-deploy-sample-workload)
-  - [Troubleshooting](#troubleshooting)
+  - [7. Configure kubectl on your local machine](#7-configure-kubectl-on-your-local-machine)
   - [Conclusion](#conclusion)
+  - [Docs](#docs)
 
 This document provides guides for setting up a k3s cluster in different environments. The first section covers installation on Hyper-V VMs on a Windows host, and the second section covers installation on AWS infrastructure. In both cases our local machine is a windows host and all commaand are executed in a powershell console.
 
