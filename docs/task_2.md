@@ -48,7 +48,7 @@ wait for infrastructure to be provisioned, and use the IP addresses provided in 
 Try to connect to public ip of the bastion host
 
 ```powershell
-ssh ec2-user@<bastion-public-ip> -i .\.ssh\deployer-key.pub
+ssh ec2-user@<bastion-public-ip> -i .\.ssh\deployer-key
 ```
 You should be able to connect. Now disconnect from bastion and copy the private key to the bastion (securely):
 ```powershell
