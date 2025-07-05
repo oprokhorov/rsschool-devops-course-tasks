@@ -193,3 +193,4 @@ You can find per-task solutions for this course using these links:
 - [Task 1: AWS Account Configuration](./docs/task_1.md)
 - [Task 2: Basic Infrastructure Configuration](./docs/task_2.md)
 - [Task 3: K8s Cluster Configuration and Creationn](./docs/task_3.md)
+- [Task 4: Jenkins Installation and Configuration](./docs/task_4.md)
