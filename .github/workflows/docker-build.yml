@@ -16,6 +16,6 @@ jobs:
         with:
           username: oprokhorov
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
-      - name: push image to Docker Hub
+      - name: push image to docker hub
         run: |
           docker push oprokhorov/flask-hello:latest
