@@ -1,0 +1,56 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: python
+                    image: python:3.9
+                    command:
+                    - cat
+                    tty: true
+            """
+        }
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'task_6', url: 'https://github.com/oprokhorov/rsschool-devops-course-tasks.git'
+            }
+        }
+        
+        stage('Application build and Unit test execution') {
+            steps {
+                container('python') {
+                    sh '''
+                        cd flask_app/
+                        python -m venv ../venv
+                        . ../venv/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                        python -m unittest test_main.py
+                    '''
+                }
+            }
+        }
+
+        stage('Security check with SonarQube') {
+        steps {
+            container('python') {
+                withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        pip install pysonar
+                        pysonar -Dsonar.token=$SONAR_TOKEN
+                    '''
+                    // Other parameters are read from sonar-project.properties in repo root
+                }
+            }
+        }
+    }
+
+
+    }
+}
