@@ -26,6 +26,12 @@ pipeline {
                     command:
                     - cat
                     tty: true
+
+                  - name: kubectl
+                    image: dtzar/helm-kubectl:latest
+                    command:
+                    - cat
+                    tty: true
             """
         }
     }
@@ -115,7 +121,45 @@ pipeline {
             }
         }
 
-        // check if deployment is successful
+        stage('Verify Deployment') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        set -xe
+                        # Wait for pods to be ready
+                        kubectl wait --for=condition=ready pod -l app=flask-hello -n flask-hello --timeout=300s
+                        
+                        # Use internal cluster service URL
+                        SERVICE_URL="http://flask-hello.flask-hello.svc.cluster.local"
+                        
+                        echo "Testing application at $SERVICE_URL"
+                        
+                        # Test the application endpoint using internal service
+                        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL)
+                        
+                        if [ "$RESPONSE" = "200" ]; then
+                            echo "✅ Application is responding correctly (HTTP 200)"
+                            # Verify the content contains "Hello, World!"
+                            CONTENT=$(curl -s $SERVICE_URL)
+                            if echo "$CONTENT" | grep -q "Hello, World!"; then
+                                echo "✅ Application content verified: Hello, World! found"
+                            else
+                                echo "❌ Application content verification failed: Hello, World! not found"
+                                echo "Actual content: $CONTENT"
+                                exit 1
+                            fi
+                        else
+                            echo "❌ Application health check failed with HTTP code: $RESPONSE"
+                            echo "Debugging information:"
+                            kubectl get pods -n flask-hello
+                            kubectl get services -n flask-hello
+                            kubectl describe service flask-hello -n flask-hello
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
 
         // notify
 
