@@ -6,11 +6,13 @@ pipeline {
                 kind: Pod
                 spec:
                   containers:
+
                   - name: python
                     image: python:3.9
                     command:
                     - cat
                     tty: true
+
                   - name: docker
                     image: docker:20.10.16-dind
                     securityContext:
@@ -18,6 +20,12 @@ pipeline {
                     env:
                     - name: DOCKER_TLS_CERTDIR
                       value: "" # Disables TLS for Docker in Docker
+
+                  - name: helm
+                    image: alpine/helm:latest
+                    command:
+                    - cat
+                    tty: true
             """
         }
     }
@@ -89,7 +97,23 @@ pipeline {
             }
         }
 
-        // deploy to Kubernetes
+        stage('Deploy to Minikube') {
+            steps {
+                container('helm') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                            helm upgrade --install flask-hello ./flask_app_helm \
+                                --set image.repository=oprokhorov/flask-hello \
+                                --set image.tag=${BUILD_NUMBER} \
+                                --namespace flask-hello \
+                                --create-namespace \
+                                --values ./flask_app_helm/values.yaml \
+                                --wait
+                        '''
+                    }
+                }
+            }
+        }
 
         // check if deployment is successful
 
