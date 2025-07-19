@@ -160,8 +160,35 @@ pipeline {
                 }
             }
         }
+    }
 
-        // notify
-
+    post {
+        success {
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                discordSend description: "Flask Hello World deployment completed successfully! ✅",
+                        footer: "Jenkins Pipeline",
+                        result: currentBuild.currentResult,
+                        title: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        webhookURL: DISCORD_WEBHOOK,
+                        enableArtifactsList: false,
+                        successful: true
+            }
+        }
+        
+        failure {
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                discordSend description: "Flask Hello World deployment failed! ❌\nFailed at stage: ${env.STAGE_NAME ?: 'Unknown'}",
+                        footer: "Jenkins Pipeline",
+                        result: currentBuild.currentResult,
+                        title: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        webhookURL: DISCORD_WEBHOOK,
+                        enableArtifactsList: false,
+                        successful: false
+            }
+        }
+        
+        always {
+            echo "Pipeline completed. Notification sent to Discord."
+        }
     }
 }
