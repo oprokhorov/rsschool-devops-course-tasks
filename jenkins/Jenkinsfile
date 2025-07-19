@@ -11,18 +11,25 @@ pipeline {
                     command:
                     - cat
                     tty: true
+                  - name: docker
+                    image: docker:20.10.16-dind
+                    securityContext:
+                      privileged: true
+                    env:
+                    - name: DOCKER_TLS_CERTDIR
+                      value: "" # Disables TLS for Docker in Docker
             """
         }
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'task_6', url: 'https://github.com/oprokhorov/rsschool-devops-course-tasks.git'
             }
         }
-        
-        stage('Application build and Unit test execution') {
+
+        stage('Build and Unit test') {
             steps {
                 container('python') {
                     sh '''
@@ -37,20 +44,56 @@ pipeline {
             }
         }
 
-        stage('Security check with SonarQube') {
-        steps {
-            container('python') {
-                withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                        pip install pysonar
-                        pysonar -Dsonar.token=$SONAR_TOKEN
-                    '''
-                    // Other parameters are read from sonar-project.properties in repo root
+        stage('SonarQube scan') {
+            steps {
+                container('python') {
+                    withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            pip install pysonar
+                            pysonar -Dsonar.token=$SONAR_TOKEN
+                        '''
+                        // Other parameters are read from sonar-project.properties in repo root
+                    }
                 }
             }
         }
-    }
 
+        stage('Docker Build') {
+            steps {
+                container('docker') {
+                    script {
+                        env.IMAGE_NAME = "oprokhorov/flask-hello"
+                        env.IMAGE_TAG = "${BUILD_NUMBER}"
+
+                        sh """
+                            cd flask_app/
+                            docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} -t ${env.IMAGE_NAME}:latest .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                container('docker') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                            docker push oprokhorov/flask-hello:${BUILD_NUMBER}
+                            docker push oprokhorov/flask-hello:latest
+                            docker logout
+                        """
+                    }
+                }
+            }
+        }
+
+        // deploy to Kubernetes
+
+        // check if deployment is successful
+
+        // notify
 
     }
 }
