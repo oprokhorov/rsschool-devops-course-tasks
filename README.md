@@ -195,3 +195,5 @@ You can find per-task solutions for this course using these links:
 - [Task 3: K8s Cluster Configuration and Creationn](./docs/task_3.md)
 - [Task 4: Jenkins Installation and Configuration](./docs/task_4.md)
 - [Task 5: Simple Application Deployment with Helm](./docs/task_5.md)
+- [Task 6: Application Deployment via Jenkins Pipeline](./docs/task_6.md)
+- [Task 7: Prometheus Deployment on K8s](./docs/task_7.md)

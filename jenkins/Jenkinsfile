@@ -1,0 +1,199 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+
+                  - name: python
+                    image: python:3.9
+                    command:
+                    - cat
+                    tty: true
+
+                  - name: docker
+                    image: docker:20.10.16-dind
+                    securityContext:
+                      privileged: true
+                    env:
+                    - name: DOCKER_TLS_CERTDIR
+                      value: "" # Disables TLS for Docker in Docker
+
+                  - name: helm
+                    image: alpine/helm:latest
+                    command:
+                    - cat
+                    tty: true
+
+                  - name: kubectl
+                    image: dtzar/helm-kubectl:latest
+                    command:
+                    - cat
+                    tty: true
+            """
+        }
+    }
+
+    triggers {
+        // Poll SCM every 2 minutes
+        pollSCM('H/2 * * * *')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'task_6', url: 'https://github.com/oprokhorov/rsschool-devops-course-tasks.git'
+            }
+        }
+
+        stage('Build and Unit test') {
+            steps {
+                container('python') {
+                    sh '''
+                        cd flask_app/
+                        python -m venv ../venv
+                        . ../venv/bin/activate
+                        pip install --upgrade pip
+                        pip install -r requirements.txt
+                        python -m unittest test_main.py
+                    '''
+                }
+            }
+        }
+
+        stage('SonarQube scan') {
+            steps {
+                container('python') {
+                    withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            pip install pysonar
+                            pysonar -Dsonar.token=$SONAR_TOKEN
+                        '''
+                        // Other parameters are read from sonar-project.properties in repo root
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                container('docker') {
+                    script {
+                        env.IMAGE_NAME = "oprokhorov/flask-hello"
+                        env.IMAGE_TAG = "${BUILD_NUMBER}"
+
+                        sh """
+                            cd flask_app/
+                            docker build -t ${env.IMAGE_NAME}:${env.IMAGE_TAG} -t ${env.IMAGE_NAME}:latest .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                container('docker') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                            echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                            docker push oprokhorov/flask-hello:${BUILD_NUMBER}
+                            docker push oprokhorov/flask-hello:latest
+                            docker logout
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Minikube') {
+            steps {
+                container('helm') {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh '''
+                            helm upgrade --install flask-hello ./flask_app_helm \
+                                --set image.repository=oprokhorov/flask-hello \
+                                --set image.tag=${BUILD_NUMBER} \
+                                --namespace flask-hello \
+                                --create-namespace \
+                                --values ./flask_app_helm/values.yaml \
+                                --wait
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        set -xe
+                        # Wait for pods to be ready
+                        kubectl wait --for=condition=ready pod -l app=flask-hello -n flask-hello --timeout=300s
+                        
+                        # Use internal cluster service URL
+                        SERVICE_URL="http://flask-hello.flask-hello.svc.cluster.local"
+                        
+                        echo "Testing application at $SERVICE_URL"
+                        
+                        # Test the application endpoint using internal service
+                        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL)
+                        
+                        if [ "$RESPONSE" = "200" ]; then
+                            echo "✅ Application is responding correctly (HTTP 200)"
+                            # Verify the content contains "Hello, World!"
+                            CONTENT=$(curl -s $SERVICE_URL)
+                            if echo "$CONTENT" | grep -q "Hello, World!"; then
+                                echo "✅ Application content verified: Hello, World! found"
+                            else
+                                echo "❌ Application content verification failed: Hello, World! not found"
+                                echo "Actual content: $CONTENT"
+                                exit 1
+                            fi
+                        else
+                            echo "❌ Application health check failed with HTTP code: $RESPONSE"
+                            echo "Debugging information:"
+                            kubectl get pods -n flask-hello
+                            kubectl get services -n flask-hello
+                            kubectl describe service flask-hello -n flask-hello
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                discordSend description: "Flask Hello World deployment completed successfully! ✅",
+                        footer: "Jenkins Pipeline",
+                        result: currentBuild.currentResult,
+                        title: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        webhookURL: DISCORD_WEBHOOK,
+                        enableArtifactsList: false,
+                        successful: true
+            }
+        }
+        
+        failure {
+            withCredentials([string(credentialsId: 'discord-webhook-url', variable: 'DISCORD_WEBHOOK')]) {
+                discordSend description: "Flask Hello World deployment failed! ❌\nFailed at stage: ${env.STAGE_NAME ?: 'Unknown'}",
+                        footer: "Jenkins Pipeline",
+                        result: currentBuild.currentResult,
+                        title: "${env.JOB_NAME} - Build #${env.BUILD_NUMBER}",
+                        webhookURL: DISCORD_WEBHOOK,
+                        enableArtifactsList: false,
+                        successful: false
+            }
+        }
+        
+        always {
+            echo "Pipeline completed. Notification sent to Discord."
+        }
+    }
+}
