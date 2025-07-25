@@ -1,0 +1,28 @@
+# Reference https://github.com/bitnami/charts/blob/main/bitnami/grafana/values.yaml
+
+service:
+  type: NodePort
+
+admin:
+  existingSecret: grafana-credentials
+  existingSecretPasswordKey: grafana-admin-password
+
+smtp:
+  enabled: true
+  host: smtp.gmail.com:587
+  existingSecret: grafana-credentials
+  existingSecretUserKey: smtp-user
+  existingSecretPasswordKey: smtp-password
+  fromName: Grafana
+  startTLS: true
+  skipVerify: false
+
+datasources:
+  secretDefinition:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true

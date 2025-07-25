@@ -38,18 +38,48 @@ pipeline {
             }
         }
 
+        stage('Create Secrets') {
+            steps {
+                container('kubectl') {
+                    withCredentials([
+                        string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_ADMIN_PASSWORD'),
+                        usernamePassword(credentialsId: 'gmail-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')
+                    ]) {
+                        sh '''
+                            set -euo pipefail
+                            kubectl create secret generic grafana-credentials \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-literal=grafana-admin-password="$GRAFANA_ADMIN_PASSWORD" \\
+                              --from-literal=smtp-user="$SMTP_USER" \\
+                              --from-literal=smtp-password="$SMTP_PASSWORD" \\
+                              --dry-run=client -o yaml | kubectl apply -f -
+                            
+                            kubectl get secret -n monitoring grafana-credentials
+                        '''
+                    }
+                }
+            }
+        }
+
         stage('Deploy Monitoring Stack') {
             steps {
                 container('helm') {
-                    withCredentials([string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'gmail-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')]) {
                         sh '''
-                            set -e
+                            set -euo pipefail
 
                             helm repo add bitnami https://charts.bitnami.com/bitnami || true
                             helm repo update
 
-                            helm upgrade --install prometheus bitnami/prometheus \\
-                              --namespace "${NAMESPACE}"
+                            helm upgrade --install prometheus-stack bitnami/kube-prometheus \\
+                              --namespace "${NAMESPACE}" \\
+                              --wait
+
+                            helm upgrade --install grafana bitnami/grafana \\
+                              --namespace "${NAMESPACE}" \\
+                              --set smtp.fromAddress="$SMTP_USER" \\
+                              -f ./monitoring/grafana-values.yaml \\
+                              --wait
                         '''
                     }
                 }
