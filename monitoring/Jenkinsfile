@@ -1,0 +1,58 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                    - name: helm
+                      image: alpine/helm:latest
+                      command: [ "cat" ]
+                      tty: true
+                    - name: kubectl
+                      image: dtzar/helm-kubectl:latest
+                      command: [ "cat" ]
+                      tty: true
+            """
+        }
+    }
+
+    parameters {
+        string(name: 'NAMESPACE',
+        defaultValue: 'monitoring',
+        description: 'Namespace to deploy monitoring stack into')
+    }
+
+    stages {
+
+        stage('Ensure Namespace Exists') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "Using namespace: ${NAMESPACE}"
+                        kubectl get ns "${NAMESPACE}" || kubectl create ns "${NAMESPACE}"
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Monitoring Stack') {
+            steps {
+                container('helm') {
+                    withCredentials([string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_PASSWORD')]) {
+                        sh '''
+                            set -e
+
+                            helm repo add bitnami https://charts.bitnami.com/bitnami || true
+                            helm repo update
+
+                            helm upgrade --install prometheus bitnami/prometheus \\
+                              --namespace "${NAMESPACE}"
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
