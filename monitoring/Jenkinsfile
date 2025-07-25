@@ -18,11 +18,12 @@ pipeline {
         }
     }
 
-    parameters {
-        string(name: 'NAMESPACE',
-        defaultValue: 'monitoring',
-        description: 'Namespace to deploy monitoring stack into')
-    }
+    // Moved parameter definition to JcasC
+    // parameters {
+    //     string(name: 'NAMESPACE',
+    //     defaultValue: 'monitoring',
+    //     description: 'Namespace to deploy monitoring stack into')
+    // }
 
     stages {
 
