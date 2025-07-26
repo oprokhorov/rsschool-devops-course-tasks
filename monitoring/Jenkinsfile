@@ -70,7 +70,14 @@ pipeline {
                             set -euo pipefail
 
                             helm repo add bitnami https://charts.bitnami.com/bitnami || true
+                            helm repo add codecentric https://codecentric.github.io/helm-charts || true
+
                             helm repo update
+
+                            helm upgrade --install mailhog codecentric/mailhog \\
+                              --namespace "${NAMESPACE}" \\
+                              --set service.type=ClusterIP \\
+                              --wait
 
                             helm upgrade --install prometheus-stack bitnami/kube-prometheus \\
                               --namespace "${NAMESPACE}" \\
@@ -78,7 +85,6 @@ pipeline {
 
                             helm upgrade --install grafana bitnami/grafana \\
                               --namespace "${NAMESPACE}" \\
-                              --set smtp.fromAddress="$SMTP_USER" \\
                               -f ./monitoring/grafana-values.yaml \\
                               --wait
                         '''

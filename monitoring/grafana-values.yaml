@@ -9,13 +9,14 @@ admin:
 
 smtp:
   enabled: true
-  host: smtp.gmail.com:587
+  host: mailhog.monitoring.svc.cluster.local:1025
   existingSecret: grafana-credentials
   existingSecretUserKey: smtp-user
   existingSecretPasswordKey: smtp-password
-  fromName: Grafana
-  startTLS: true
-  skipVerify: false
+  fromName: Oncall alerts
+  fromAddress: alerts@weyland-yutani.local
+  startTLS: false
+  skipVerify: true
 
 datasources:
   secretDefinition:
