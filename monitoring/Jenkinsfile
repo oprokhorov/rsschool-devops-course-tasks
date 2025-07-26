@@ -76,7 +76,7 @@ pipeline {
 
                             helm upgrade --install mailhog codecentric/mailhog \\
                               --namespace "${NAMESPACE}" \\
-                              --set service.type=ClusterIP \\
+                              --set service.type=NodePort \\
                               --wait
 
                             helm upgrade --install prometheus-stack bitnami/kube-prometheus \\
