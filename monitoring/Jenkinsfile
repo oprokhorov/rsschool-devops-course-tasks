@@ -39,7 +39,7 @@ pipeline {
             }
         }
 
-        stage('Create Secrets') {
+        stage('Create resources') {
             steps {
                 container('kubectl') {
                     withCredentials([
@@ -48,6 +48,8 @@ pipeline {
                     ]) {
                         sh '''
                             set -euo pipefail
+
+                            # These secrets are used in Grafana installation
                             kubectl create secret generic grafana-credentials \\
                               --namespace "${NAMESPACE}" \\
                               --from-literal=grafana-admin-password="$GRAFANA_ADMIN_PASSWORD" \\
@@ -56,6 +58,11 @@ pipeline {
                               --dry-run=client -o yaml | kubectl apply -f -
                             
                             kubectl get secret -n monitoring grafana-credentials
+
+                            # Congifmap for custom Grafana dashboard
+                            kubectl create configmap grafana-dashboard-k8s \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-file=./monitoring/dashboard.json
                         '''
                     }
                 }

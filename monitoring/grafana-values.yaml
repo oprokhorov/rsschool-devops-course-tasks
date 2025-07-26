@@ -27,3 +27,19 @@ datasources:
         url: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
         access: proxy
         isDefault: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /opt/bitnami/grafana/dashboards/default
+
+dashboardsConfigMaps:
+  default: grafana-dashboard-k8s
