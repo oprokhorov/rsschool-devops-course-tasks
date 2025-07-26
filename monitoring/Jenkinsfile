@@ -60,9 +60,8 @@ pipeline {
                             kubectl get secret -n monitoring grafana-credentials
 
                             # Congifmap for custom Grafana dashboard
-                            kubectl create configmap grafana-dashboard-k8s \\
+                            kubectl apply -f ./monitoring/dashboard-configmap.yaml \\
                               --namespace "${NAMESPACE}" \\
-                              --from-file=./monitoring/dashboard.json
                         '''
                     }
                 }
