@@ -28,7 +28,7 @@ datasources:
         access: proxy
         isDefault: true
 
-dashboardProviders:
+dashboardsProvider:
   enabled: true
 
 dashboardsConfigMaps:
