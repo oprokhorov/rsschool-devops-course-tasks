@@ -29,17 +29,7 @@ datasources:
         isDefault: true
 
 dashboardProviders:
-  dashboardproviders.yaml:
-    apiVersion: 1
-    providers:
-      - name: 'default'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
-        editable: true
-        options:
-          path: /opt/bitnami/grafana/dashboards/default
+  enabled: true
 
 dashboardsConfigMaps:
   - configMapName: grafana-dashboard-k8s
