@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grafana-dashboard-k8s
-  namespace: monitoring
-data:
-  dashboard.json: |
-    {{ .Files.Get "monitoring/dashboard.json" | indent 4 }}
