@@ -42,4 +42,6 @@ dashboardProviders:
           path: /opt/bitnami/grafana/dashboards/default
 
 dashboardsConfigMaps:
-  default: grafana-dashboard-k8s
+  - configMapName: grafana-dashboard-k8s
+    folderName: default
+    fileName: dashboard.json
