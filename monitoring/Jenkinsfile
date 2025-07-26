@@ -44,7 +44,7 @@ pipeline {
                 container('kubectl') {
                     withCredentials([
                         string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_ADMIN_PASSWORD'),
-                        usernamePassword(credentialsId: 'gmail-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')
+                        usernamePassword(credentialsId: 'local-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')
                     ]) {
                         sh '''
                             set -euo pipefail
@@ -65,7 +65,7 @@ pipeline {
         stage('Deploy Monitoring Stack') {
             steps {
                 container('helm') {
-                    withCredentials([usernamePassword(credentialsId: 'gmail-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'local-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')]) {
                         sh '''
                             set -euo pipefail
 
