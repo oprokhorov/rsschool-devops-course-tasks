@@ -1,0 +1,41 @@
+# Reference https://github.com/bitnami/charts/blob/main/bitnami/grafana/values.yaml
+
+service:
+  type: NodePort
+
+admin:
+  existingSecret: grafana-credentials
+  existingSecretPasswordKey: grafana-admin-password
+
+smtp:
+  enabled: true
+  host: mailhog.monitoring.svc.cluster.local:1025
+  existingSecret: grafana-credentials
+  existingSecretUserKey: smtp-user
+  existingSecretPasswordKey: smtp-password
+  fromName: Oncall alerts
+  fromAddress: alerts@weyland-yutani.local
+  startTLS: false
+  skipVerify: true
+
+datasources:
+  secretDefinition:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true
+        uid: prometheus
+
+dashboardsProvider:
+  enabled: true
+
+dashboardsConfigMaps:
+  - configMapName: grafana-dashboard-k8s
+    folderName: default
+    fileName: dashboard.json
+
+alerting:
+  configMapName: "grafana-alerting"

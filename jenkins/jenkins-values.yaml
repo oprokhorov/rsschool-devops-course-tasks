@@ -404,15 +404,7 @@ controller:
 
   # Plugins will be installed during Jenkins controller start
   # -- List of Jenkins plugins to install. If you don't want to install plugins, set it to `false`
-  installPlugins:
-    - kubernetes:4358.vcfd9c5a_0a_f51
-    - workflow-aggregator:608.v67378e9d3db_1
-    - git:5.7.0
-    - configuration-as-code:1971.vf9280461ea_89
-    - job-dsl:1.93
-    - blueocean:1.27.21 # better UI for pipelines
-    - dark-theme:574.va_19f05d54df5
-
+  installPlugins: {}
 
   # If set to false, Jenkins will download the minimum required version of all dependencies.
   # -- Download the minimum required version or latest version of all dependencies
@@ -520,16 +512,7 @@ controller:
     configUrls: []
     # - https://acme.org/jenkins.yaml
     # -- List of Jenkins Config as Code scripts
-    configScripts:
-      hello-job: |
-        jobs:
-          - script: >
-              job('HelloWorld') {
-                description('Print Hello World to the output')
-                steps {
-                  shell('echo Hello World')
-                }
-              }
+    configScripts: {}
 
     # Allows adding to the top-level security JCasC section. For legacy purposes, by default, the chart includes apiToken configurations
     # -- Jenkins Config as Code security-section
@@ -1800,6 +1783,9 @@ controller:
     - workflow-aggregator:608.v67378e9d3db_1
     - git:5.7.0
     - configuration-as-code:1971.vf9280461ea_89
+    - job-dsl:1.93
+    - blueocean:1.27.21 # better UI for pipelines
+    - discord-notifier:260.v8f28622b_a_6b_7
 
   # If set to false, Jenkins will download the minimum required version of all dependencies.
   # -- Download the minimum required version or latest version of all dependencies
@@ -1907,7 +1893,38 @@ controller:
     configUrls: []
     # - https://acme.org/jenkins.yaml
     # -- List of Jenkins Config as Code scripts
-    configScripts: {}
+    configScripts:
+      jobs-config: |
+        jobs:
+          - script: >
+              job('Hello World') {
+                description('Print Hello World to the output')
+                steps {
+                  shell('echo Hello World')
+                }
+              }
+
+              pipelineJob('Deploy monitoring stack') {
+                parameters {
+                  stringParam('NAMESPACE', 'monitoring', 'Namespace to deploy monitoring stack into')
+                }
+                description('Deploys the monitoring stack into the specified namespace')
+                definition {
+                  cpsScm {
+                    scm {
+                      git {
+                        remote {
+                          url('https://github.com/oprokhorov/rsschool-devops-course-tasks.git')
+                        }
+                        branches('*/task_7')
+                      }
+                    }
+                    scriptPath('monitoring/Jenkinsfile')
+                  }
+                }
+              }
+
+
 
     # Allows adding to the top-level security JCasC section. For legacy purposes, by default, the chart includes apiToken configurations
     # -- Jenkins Config as Code security-section

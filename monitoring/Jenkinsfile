@@ -1,0 +1,110 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  serviceAccountName: jenkins
+                  containers:
+                    - name: helm
+                      image: alpine/helm:latest
+                      command: [ "cat" ]
+                      tty: true
+                    - name: kubectl
+                      image: dtzar/helm-kubectl:latest
+                      command: [ "cat" ]
+                      tty: true
+            """
+        }
+    }
+
+    // Moved parameter definition to JcasC
+    // parameters {
+    //     string(name: 'NAMESPACE',
+    //     defaultValue: 'monitoring',
+    //     description: 'Namespace to deploy monitoring stack into')
+    // }
+
+    stages {
+
+        stage('Ensure Namespace Exists') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "Using namespace: ${NAMESPACE}"
+                        kubectl get ns "${NAMESPACE}" || kubectl create ns "${NAMESPACE}"
+                    '''
+                }
+            }
+        }
+
+        stage('Create resources') {
+            steps {
+                container('kubectl') {
+                    withCredentials([
+                        string(credentialsId: 'grafana-admin-password', variable: 'GRAFANA_ADMIN_PASSWORD'),
+                        usernamePassword(credentialsId: 'local-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')
+                    ]) {
+                        sh '''
+                            set -euo pipefail
+
+                            # These secrets are used in Grafana installation
+                            kubectl create secret generic grafana-credentials \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-literal=grafana-admin-password="$GRAFANA_ADMIN_PASSWORD" \\
+                              --from-literal=smtp-user="$SMTP_USER" \\
+                              --from-literal=smtp-password="$SMTP_PASSWORD" \\
+                              --dry-run=client -o yaml | kubectl apply -f -
+                            
+                            kubectl get secret -n monitoring grafana-credentials
+
+                            # Congifmap for custom Grafana dashboard
+                            kubectl create configmap grafana-dashboard-k8s \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-file=dashboard.json=./monitoring/dashboard.json \\
+                              --dry-run=client -o yaml | kubectl apply -f -
+                            
+                            # Confitgmap for Grafana alerting
+                            kubectl create configmap grafana-alerting \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-file=grafana-alerting.yml=./monitoring/grafana-alerting.yml \\
+                              --dry-run=client -o yaml | kubectl apply -f -
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Monitoring Stack') {
+            steps {
+                container('helm') {
+                    withCredentials([usernamePassword(credentialsId: 'local-smtp', usernameVariable: 'SMTP_USER', passwordVariable: 'SMTP_PASSWORD')]) {
+                        sh '''
+                            set -euo pipefail
+
+                            helm repo add bitnami https://charts.bitnami.com/bitnami || true
+                            helm repo add codecentric https://codecentric.github.io/helm-charts || true
+
+                            helm repo update
+
+                            helm upgrade --install mailhog codecentric/mailhog \\
+                              --namespace "${NAMESPACE}" \\
+                              --set service.type=NodePort \\
+                              --wait
+
+                            helm upgrade --install prometheus-stack bitnami/kube-prometheus \\
+                              --namespace "${NAMESPACE}" \\
+                              --wait
+
+                            helm upgrade --install grafana bitnami/grafana \\
+                              --namespace "${NAMESPACE}" \\
+                              -f ./monitoring/grafana-values.yaml \\
+                              --wait
+                        '''
+                    }
+                }
+            }
+        }
+    }
+}
