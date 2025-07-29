@@ -97,7 +97,7 @@ groups:
         labels: {}
         isPaused: false
         notification_settings:
-          receiver: DevOps contact point
+          receiver: devops
       - uid: high-cpu-usage
         title: High Cluster CPU usage (1m avg)
         condition: C
@@ -159,4 +159,4 @@ groups:
         labels: {}
         isPaused: false
         notification_settings:
-          receiver: DevOps contact point
+          receiver: devops
