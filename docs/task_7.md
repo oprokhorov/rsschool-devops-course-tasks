@@ -93,60 +93,12 @@ Open Grafana and log in with admin and password that you configured in Jenkins c
 
 - Go to "Explore" and see if any metrics are available, for example `node_memory_MemAvailable_bytes:sum` 
 
-### Configure Contact point (Manual)
-
-Open separate console window and create a port-forwarding connection to mailhog pod
-
-```
-kubectl port-forward svc/mailhog 8025:8025 -n monitoring
-```
-
-Open http://localhost:8085 in the browser
-
-Go to Grafana > Alerting > Contact Points > Create contact point
-
-- Name: `DevOps contact point`
-- Integration: `Email`
-- Addresses: `devops@weyland-yutani.local`
-
-Click Test > Send test notification, you should see "Test succesful" and mailhog browser notification
-Click "Save contact point"
-
-### Configure Alerts (Manual)
-
-Go to Grafana > Dashboards > Kubernetes cluster monitoring (via Prometheus)
-
-Create high CPU alert.
-Click top right corner for "Cluster CPU usage (1m avg)" gauge > More > New alert rule
-
-- Name: `High Cluster CPU usage (1m avg)`
-- Condition" `WHEN Query A IS ABOVE 60`
-
-- Evaluation group and interval > New evaluation group:
-  - Evaluation group name: `10s eval`
-  - Evaluation interval: `10s`
-  - Click create
-- Pending period: `10s`
-- Keep firing: `10s`
-- Contact point: `DevOps contact point`
-- Click save
-
-Cluster memory usage
-
-Lack of RAM capacity on any node of the cluster
-
-- Name: `Low available cluster memory`
-- Condition" `WHEN Query A IS ABOVE 60`
-- Evaluation group and interval: `10s eval`
-- Pending period: `10s`
-- Keep firing: `10s`
-- Contact point: `DevOps contact point`
-- Click save
+### Test the alerting
 
 Start temporary pod that will stress both CPU and RAM
 
 ```
-kubectl run stress-ram --image=polinux/stress --rm -i --restart=Never -- stress --vm 4 --vm-bytes 1G --timeout 120s
+kubectl run stress-ram --image=polinux/stress --rm -i --restart=Never -- stress --vm 4 --vm-bytes 1G --timeout 180s
 
 ```
 
