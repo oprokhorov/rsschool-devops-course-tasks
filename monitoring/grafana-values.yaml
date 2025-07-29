@@ -36,3 +36,6 @@ dashboardsConfigMaps:
   - configMapName: grafana-dashboard-k8s
     folderName: default
     fileName: dashboard.json
+
+alerting:
+  configMapName: "grafana-alerting"

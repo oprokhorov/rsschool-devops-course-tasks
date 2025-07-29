@@ -64,6 +64,12 @@ pipeline {
                               --namespace "${NAMESPACE}" \\
                               --from-file=dashboard.json=./monitoring/dashboard.json \\
                               --dry-run=client -o yaml | kubectl apply -f -
+                            
+                            # Confitgmap for Grafana alerting
+                            kubectl create configmap grafana-alerting \\
+                              --namespace "${NAMESPACE}" \\
+                              --from-file=grafana-alerting.yml=./monitoring/grafana-alerting.yml \\
+                              --dry-run=client -o yaml | kubectl apply -f -
                         '''
                     }
                 }
