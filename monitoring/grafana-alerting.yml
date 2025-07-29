@@ -12,19 +12,19 @@ contactPoints:
 
 policies:
   - orgId: 1
-    receiver: devops
+    receiver: "DevOps contact point"
     group_by: ['alertname']
     group_wait: 10s
     group_interval: 5m
     repeat_interval: 4h
     routes:
-      - receiver: devops
+      - receiver: "DevOps contact point"
         matchers:
           - severity = high
         group_wait: 10s
         group_interval: 5m
         repeat_interval: 1h
-      - receiver: devops
+      - receiver: "DevOps contact point"
         matchers:
           - severity = critical
         group_wait: 5s
@@ -73,8 +73,8 @@ groups:
                   query:
                     params:
                       - C
-                    reducer:
-                      params: []
+                  reducer:
+                    params: []
                     type: last
                   type: query
               datasource:
@@ -94,10 +94,11 @@ groups:
         annotations:
           __dashboardUid__: 6169cb6b-ad44-4c0d-a186-7e1b8e1594a4
           __panelId__: "4"
-        labels: {}
+        labels:
+          severity: medium
         isPaused: false
         notification_settings:
-          receiver: devops
+          receiver: "DevOps contact point"
       - uid: high-cpu-usage
         title: High Cluster CPU usage (1m avg)
         condition: C
@@ -135,8 +136,8 @@ groups:
                   query:
                     params:
                       - C
-                    reducer:
-                      params: []
+                  reducer:
+                    params: []
                     type: last
                   type: query
               datasource:
@@ -156,7 +157,8 @@ groups:
         annotations:
           __dashboardUid__: 6169cb6b-ad44-4c0d-a186-7e1b8e1594a4
           __panelId__: "6"
-        labels: {}
+        labels:
+          severity: high
         isPaused: false
         notification_settings:
-          receiver: devops
+          receiver: "DevOps contact point"
